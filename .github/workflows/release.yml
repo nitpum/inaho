@@ -1,10 +1,9 @@
-name: Go
+name: Release
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+# FIXME: This workflow still missing release step 
+on: workflow_dispatch:
+  # push:
+  #   branches: [main]
 
 jobs:
   release-linux-amd64:
