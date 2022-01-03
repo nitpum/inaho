@@ -4,3 +4,8 @@ bot_role:
     - 1234
 nickname:
   enabled: true
+  members:
+    - id: 1234
+      prefix:
+        - '[prefix] '
+        - prefix

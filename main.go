@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
@@ -84,6 +85,8 @@ func guildMemberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 func guildMemberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
 	if m.User.Bot {
 		botMustHaveBotRole(s, m.Member)
+	} else {
+		addPrefixToMember(s, m.Member)
 	}
 }
 
@@ -185,6 +188,44 @@ func deafenBot(s *discordgo.Session, m *discordgo.VoiceStateUpdate) {
 	}
 
 	fmt.Printf("`%s` was deafened\n", member.User.Username)
+}
+
+func addPrefixToMember(s *discordgo.Session, m *discordgo.Member) {
+	if !config.Nickname.Enabled {
+		return
+	}
+
+	if m.User.Bot {
+		return
+	}
+
+	for _, member := range config.Nickname.Members {
+		if member.ID == m.User.ID {
+			nickname := strings.TrimSpace(m.Nick)
+
+			validNickname := false
+			for _, prefix := range member.Prefix {
+				if nickname == prefix || strings.HasPrefix(nickname, prefix) {
+					validNickname = true
+					break
+				}
+			}
+
+			if validNickname {
+				break
+			}
+
+			err := s.GuildMemberNickname(m.GuildID, m.User.ID, member.Prefix[0]+m.Nick)
+			if err != nil {
+				fmt.Printf("error adding prefix to member %s: %s\n", m.User.ID, err)
+				break
+			}
+
+			fmt.Printf("%s was added missing prefix nickname %s\n", m.User.Username, member.Prefix[0])
+
+			break
+		}
+	}
 }
 
 // NOTE: This function create by Github copilot
