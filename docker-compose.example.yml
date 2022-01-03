@@ -1,0 +1,8 @@
+version: '3.5'
+
+services:
+  inaho-yamato:
+    image: inaho-yamato
+    volumes:
+      - ./config.yaml:/config.yaml
+    command: -t <token> -c /config.yaml
