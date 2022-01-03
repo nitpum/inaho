@@ -5,5 +5,7 @@ config.yml
 
 !*.example.yaml
 !*.example.yml
+!.github/*/*.yaml
+!.github/*/*.yml
 
 inaho-yamato
