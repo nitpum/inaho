@@ -61,6 +61,7 @@ func main() {
 
 	dg.AddHandler(guildMemberAdd)
 	dg.AddHandler(guildMemberUpdate)
+	// dg.AddHandler(voiceStateUpdate)
 
 	err = dg.Open()
 	if err != nil {
@@ -85,6 +86,12 @@ func guildMemberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
 		botMustHaveBotRole(s, m.Member)
 	}
 }
+
+// FIXME: This is a hack to get around the fact that the bot can't be deafened
+// func voiceStateUpdate(s *discordgo.Session, m *discordgo.VoiceStateUpdate) {
+// 	fmt.Printf("Voice state updated")
+// 	deafenBot(s, m)
+// }
 
 func readConfig(filename string) (*configData, error) {
 	buff, err := ioutil.ReadFile(filename)
@@ -144,6 +151,40 @@ func botMustHaveBotRole(s *discordgo.Session, m *discordgo.Member) {
 			fmt.Printf("`%s` was given the `%s` role\n", m.User.Username, role)
 		}
 	}
+}
+
+func deafenBot(s *discordgo.Session, m *discordgo.VoiceStateUpdate) {
+	member, err := s.GuildMember(m.GuildID, m.UserID)
+	if err != nil {
+		fmt.Printf("error getting member %s: %s\n", m.UserID, err)
+		return
+	}
+
+	if !member.User.Bot {
+		return
+	}
+
+	if m.VoiceState.ChannelID == "" {
+		return
+	}
+
+	if m.VoiceState.Deaf {
+		return
+	}
+
+	channel, err := s.Channel(m.ChannelID)
+	if err != nil {
+		fmt.Printf("error getting channel %s: %s\n", m.ChannelID, err)
+		return
+	}
+
+	err = s.GuildMemberDeafen(channel.GuildID, m.UserID, true)
+	if err != nil {
+		fmt.Printf("error deafening member %s: %s\n", m.UserID, err)
+		return
+	}
+
+	fmt.Printf("`%s` was deafened\n", member.User.Username)
 }
 
 // NOTE: This function create by Github copilot
