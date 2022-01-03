@@ -1,0 +1,6 @@
+bot_role:
+  enabled: true
+  roles:
+    - 1234
+nickname:
+  enabled: true
