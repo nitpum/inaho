@@ -14,5 +14,6 @@ RUN strip app -o app-striped
 RUN upx --best --lzma app-striped -o app-compressed
 
 FROM scratch
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=compressor /compress/app-compressed /app
 ENTRYPOINT ["/app"]
