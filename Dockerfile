@@ -1,13 +1,18 @@
 FROM golang:1.17-alpine AS builder
 
 WORKDIR /build
-COPY go.mod .
-COPY go.sum .
+COPY go.mod go.sum ./
 RUN go mod download
 COPY *.go .
-RUN go build -o inaho-yamato
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o app
 
-FROM alpine:3.10
-WORKDIR /app
-COPY --from=builder /build/inaho-yamato /bin/inaho-yamato
-ENTRYPOINT ["/bin/inaho-yamato"]
+FROM alpine:3.13 AS compressor
+WORKDIR /compress
+RUN apk add --no-cache upx binutils
+COPY --from=builder /build/app .
+RUN strip app -o app-striped
+RUN upx --best --lzma app-striped -o app-compressed
+
+FROM scratch
+COPY --from=compressor /compress/app-compressed /app
+ENTRYPOINT ["/app"]
