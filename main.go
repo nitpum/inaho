@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/samber/lo"
 	"gopkg.in/yaml.v3"
 )
 
@@ -60,8 +61,8 @@ func main() {
 
 	dg.Identify.Intents = discordgo.IntentsGuildMembers
 
-	dg.AddHandler(guildMemberAdd)
-	dg.AddHandler(guildMemberUpdate)
+	dg.AddHandler(onGuildMemberAdd)
+	dg.AddHandler(onGuildMemberUpdate)
 	// dg.AddHandler(voiceStateUpdate)
 
 	err = dg.Open()
@@ -76,17 +77,17 @@ func main() {
 	<-sc
 }
 
-func guildMemberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
+func onGuildMemberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 	if m.User.Bot {
 		botMustHaveBotRole(s, m.Member)
 	}
 }
 
-func guildMemberUpdate(s *discordgo.Session, m *discordgo.GuildMemberUpdate) {
-	if m.User.Bot {
-		botMustHaveBotRole(s, m.Member)
+func onGuildMemberUpdate(session *discordgo.Session, member *discordgo.GuildMemberUpdate) {
+	if member.User.Bot {
+		botMustHaveBotRole(session, member.Member)
 	} else {
-		addPrefixToMember(s, m.Member)
+		addPrefixToMember(session, member.Member)
 	}
 }
 
@@ -144,7 +145,7 @@ func botMustHaveBotRole(s *discordgo.Session, m *discordgo.Member) {
 	}
 
 	for _, role := range config.BotRole.Roles {
-		if !contains(m.Roles, role) {
+		if !lo.Contains(m.Roles, role) {
 			err := s.GuildMemberRoleAdd(m.GuildID, m.User.ID, role)
 			if err != nil {
 				fmt.Printf("error adding role %s to member %s: %s\n", role, m.User.ID, err)
@@ -226,15 +227,4 @@ func addPrefixToMember(s *discordgo.Session, m *discordgo.Member) {
 			break
 		}
 	}
-}
-
-// NOTE: This function create by Github copilot
-// Create contains function that pass string array and string to check if string is in array
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
 }
