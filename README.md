@@ -7,7 +7,7 @@
 
 ## Requirement
 
-Permissions
+Permissions (`1117123586096`)
 
 - Manage Role
 - Change nickname
