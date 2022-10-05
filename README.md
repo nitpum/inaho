@@ -7,12 +7,13 @@
 
 ## Requirement
 
-Permissions (`1117123586096`)
+Permissions (`17611958448`)
 
 - Manage Role
 - Change nickname
 - Manage nickname
 - Deafen members
+- Delete invite link (too long, permanent)
 
 ## Development
 

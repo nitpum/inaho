@@ -59,10 +59,11 @@ func main() {
 	}
 	defer dg.Close()
 
-	dg.Identify.Intents = discordgo.IntentsGuildMembers
+	dg.Identify.Intents = discordgo.IntentsGuildMembers | discordgo.IntentGuildInvites
 
 	dg.AddHandler(onGuildMemberAdd)
 	dg.AddHandler(onGuildMemberUpdate)
+	dg.AddHandler(onInviteCreate)
 	// dg.AddHandler(voiceStateUpdate)
 
 	err = dg.Open()
@@ -91,6 +92,32 @@ func onGuildMemberUpdate(session *discordgo.Session, member *discordgo.GuildMemb
 	}
 }
 
+func onInviteCreate(session *discordgo.Session, inviteContext *discordgo.InviteCreate) {
+	if inviteContext.Inviter.Bot {
+		return
+	}
+
+	if inviteContext.MaxAge > 0 || (inviteContext.MaxUses > 0 && inviteContext.MaxUses <= 10) {
+		return
+	}
+
+	_, err := session.InviteDelete(inviteContext.Code)
+	if err != nil {
+		fmt.Printf("failed to delete invite code: %s\n", inviteContext.Code)
+		return
+	}
+
+	fmt.Printf("Deleted invite code `%s` created by %s(%s)\n", inviteContext.Code, inviteContext.Inviter.Username, inviteContext.Inviter.ID)
+
+	channel, err := session.UserChannelCreate(inviteContext.Inviter.ID)
+	if err != nil {
+		fmt.Printf("ERROR: Can't dm to inform user about invite code creating\f")
+		return
+	}
+
+	session.ChannelMessageSend(channel.ID, "Inaho desu~ 任務でありますから I have deleted your invite link。It don't have limit uses or expiration time。 Please create invite link with limit uses 1 - 10 and expiration time onegaishimasu~")
+}
+
 // FIXME: This is a hack to get around the fact that the bot can't be deafened
 // func voiceStateUpdate(s *discordgo.Session, m *discordgo.VoiceStateUpdate) {
 // 	fmt.Printf("Voice state updated")
@@ -106,7 +133,7 @@ func readConfig(filename string) (*configData, error) {
 	c := &configData{}
 	err = yaml.Unmarshal(buff, c)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal in %q: %v", filename, err)
+		return nil, fmt.Errorf("failed to unmarshal in %q: %v\n", filename, err)
 	}
 
 	return c, nil

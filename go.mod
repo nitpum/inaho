@@ -1,4 +1,4 @@
-module github.com/nitpum/inaho-yamato
+module github.com/nitpum/inaho
 
 go 1.18
 

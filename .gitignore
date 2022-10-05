@@ -8,4 +8,4 @@ config.yml
 !.github/*/*.yaml
 !.github/*/*.yml
 
-inaho-yamato
+inaho
