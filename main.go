@@ -97,7 +97,7 @@ func onInviteCreate(session *discordgo.Session, inviteContext *discordgo.InviteC
 		return
 	}
 
-	if inviteContext.MaxAge > 0 || (inviteContext.MaxUses > 0 && inviteContext.MaxUses <= 10) {
+	if inviteContext.MaxAge > 0 && (inviteContext.MaxUses > 0 && inviteContext.MaxUses <= 10) {
 		return
 	}
 
