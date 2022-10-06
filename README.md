@@ -1,4 +1,4 @@
-# Inaho Yamato
+# Inaho
 
 ## Feature
 
