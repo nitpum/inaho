@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"strings"
@@ -125,7 +124,7 @@ func onInviteCreate(session *discordgo.Session, inviteContext *discordgo.InviteC
 // }
 
 func readConfig(filename string) (*configData, error) {
-	buff, err := ioutil.ReadFile(filename)
+	buff, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
