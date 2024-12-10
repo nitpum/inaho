@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strings"
@@ -53,7 +54,7 @@ func main() {
 
 	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
-		fmt.Printf("error creating Discord session: %s\n", err)
+		slog.Error("error creating Discord session: %s", "error", err)
 		return
 	}
 	defer dg.Close()
@@ -67,11 +68,11 @@ func main() {
 
 	err = dg.Open()
 	if err != nil {
-		fmt.Printf("error opening connection: %s\n", err)
+		slog.Error("error opening connection: %s", "error", err)
 		return
 	}
 
-	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
+	slog.Info("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
@@ -103,6 +104,7 @@ func onInviteCreate(session *discordgo.Session, inviteContext *discordgo.InviteC
 	_, err := session.InviteDelete(inviteContext.Code)
 	if err != nil {
 		fmt.Printf("failed to delete invite code: %s\n", inviteContext.Code)
+		slog.Error("failed to delete invite code", "code", inviteContext.Code, "created_by", inviteContext.Inviter.ID, "error", err)
 		return
 	}
 
@@ -110,7 +112,7 @@ func onInviteCreate(session *discordgo.Session, inviteContext *discordgo.InviteC
 
 	channel, err := session.UserChannelCreate(inviteContext.Inviter.ID)
 	if err != nil {
-		fmt.Printf("ERROR: Can't dm to inform user about invite code creating\f")
+		slog.Error("cannot dm to inform user about invite code creating", "code", inviteContext.Code, "create_by", inviteContext.Inviter.ID, "error", err)
 		return
 	}
 
